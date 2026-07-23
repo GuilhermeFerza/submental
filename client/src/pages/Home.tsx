@@ -5,6 +5,7 @@ import { HeroSection } from "../components/sections/HeroSection";
 import { UpcomingSesh } from "../components/sections/UpcomingSesh";
 import { LatestDrops } from "../components/sections/LatestDrops";
 import { Mixtapes} from "../components/sections/Mixtapes";
+import { EventModal } from "../components/ui/EventModal";
 
 interface Event {
     id: string;
@@ -26,9 +27,9 @@ interface Mixtape {
 export function Home() {
     const [heroData, setHeroData] = useState<Event | null>(null);
     const [upComing, setUpComing] = useState<Event[]>([]);
-
     const [releases, setReleases] = useState<any[]>([]);
     const [mixtapes, setMixtapes] = useState<any[]>([]);
+    const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
     const API_URL = import.meta.env.VITE_API_URL
 
@@ -68,7 +69,14 @@ export function Home() {
 
             <main className="flex-grow px-6 py-12 flex flex-col gap-32 mb-24">
                 <HeroSection data={heroData} />
-                <UpcomingSesh events={upComing} />
+                <UpcomingSesh
+                    events={upComing} 
+                    onEventClick={(evento) => setSelectedEvent(evento)}
+                />
+                <EventModal 
+                    event={selectedEvent} 
+                    onClose={() => setSelectedEvent(null)} 
+                />
                 <LatestDrops releases={releases} />
                 <Mixtapes mixtapes={mixtapes} />
             </main>

@@ -1,17 +1,21 @@
 import { ArrowRight } from 'lucide-react';
 
 interface UpComing {
+    id?: string;
     name: string;
     date: string;
     location: string;
-    status: string; 
+    status: string;
+    headliners?: string[];
+    guests?: string[];
 }
 
 interface UpcomingSeshProps {
     events: UpComing[];
+    onEventClick: (evento: UpComing) => void;
 }
 
-export function UpcomingSesh({ events }: UpcomingSeshProps) {
+export function UpcomingSesh({ events, onEventClick }: UpcomingSeshProps) {
     return (
         <section>
             <h2 className="text-3xl font-extrabold uppercase mb-6 border-b-2 border-white pb-2">Upcoming Sesh</h2>
@@ -23,6 +27,11 @@ export function UpcomingSesh({ events }: UpcomingSeshProps) {
                         {events.map((evento, index) => (
                             <li 
                                 key={index}
+                                onClick={() => {
+                                    if (evento.status !== 'past') {
+                                        onEventClick(evento);
+                                    }
+                                }}
                                 className={`flex justify-between items-center py-6 border-b border-white/30 transition-colors px-4 group ${
                                     evento.status === 'past' 
                                         ? 'line-through text-zinc-600 cursor-not-allowed'
