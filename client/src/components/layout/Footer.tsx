@@ -7,7 +7,7 @@ export function Footer() {
                 <div className="flex flex-col gap-4">
                     <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">Submental</h2>
                     <p className="font-bold text-zinc-400 max-w-sm uppercase text-sm leading-relaxed">
-                        Fortalecendo a cena Bass Culture Brasileira. Dubs, Eventos e Veneno.
+                        Fortalecendo a cena Bass Culture Brasileira. Dubs e Eventos.
                     </p>
                 </div>
                 
@@ -15,7 +15,6 @@ export function Footer() {
                     <div className="flex flex-col gap-4 uppercase font-bold text-lg">
                         <a href="#" className="hover:underline hover:text-zinc-300 transition-colors">Eventos</a>
                         <a href="#" className="hover:underline hover:text-zinc-300 transition-colors">Lançamentos</a>
-                        <a href="#" className="hover:underline hover:text-zinc-300 transition-colors">Veneno Sets</a>
                     </div>
                     <div className="flex flex-col gap-6">
                         <a href="#" className="hover:text-zinc-400 transition-colors group">

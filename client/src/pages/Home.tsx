@@ -37,15 +37,16 @@ export function Home() {
             })
     },[])
 
+    useEffect(()=>{
+        fetch(`${API_URL}/api/releases`)
+            .then((response)=>response.json())
+            .then((data)=>{
+                setReleases(data)
+            })
+    },[])
+
 
     useEffect(() => {        
-        setReleases([
-            { id: "1", artist: "FUTSU", title: "RIDDIM VIP", coverPlaceholder: "COVER 1" },
-            { id: "2", artist: "KAITO", title: "DEEP DIVE", coverPlaceholder: "COVER 2" },
-            { id: "3", artist: "SUBMENTAL", title: "COMPILATION V1", coverPlaceholder: "COVER 3" },
-            { id: "4", artist: "ZETTA", title: "HEAVY BASS", coverPlaceholder: "COVER 4" },
-        ]);
-
         setMixtapes([
             { id: "1", title: "VENENO.LIVE 001 - KAITO", duration: "54:20" },
             { id: "2", title: "POPIH WATCH: BASS SESH", duration: "1:12:05" },

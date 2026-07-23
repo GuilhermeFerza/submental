@@ -10,7 +10,6 @@ interface Release {
 interface LatestDropsProps {
     releases: Release[];
 }
-
 export function LatestDrops({ releases }: LatestDropsProps) {
     return (
         <section>

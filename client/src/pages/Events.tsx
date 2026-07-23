@@ -30,7 +30,7 @@ export function Events() {
                 console.error("Erro ao buscar releases", error);
                 setLoading(false)
             });
-    })
+    },[])
 
     if (loading) return <p>Loading...</p>;
     const upcomingEvents = events.filter(e => e.status === 'upcoming');
@@ -43,7 +43,7 @@ export function Events() {
             <main className="flex-grow px-6 py-12 flex flex-col gap-24 mb-24">
                 <header className="border-b-4 border-white pb-8">
                     <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter">Sesh Archive</h1>
-                    <p className="text-xl text-zinc-400 font-bold uppercase mt-4">Onde o grave bate de verdade.</p>
+                    <p className="text-xl text-zinc-400 font-bold uppercase mt-4">Dub Culture</p>
                 </header>
 
                 <section>

@@ -13,7 +13,7 @@ func GetReleases(c *gin.Context) {
 	rows, err := database.Pool.Query(context.Background(), `
 		SELECT id, artist, title, cover_placeholder, release_year
 		FROM releases
-		ORDER BY release_year DESC
+		ORDER BY created_at DESC;
 	`)
 
 	if err != nil {
