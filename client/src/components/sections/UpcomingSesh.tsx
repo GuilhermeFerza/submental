@@ -16,37 +16,31 @@ interface UpcomingSeshProps {
 }
 
 export function UpcomingSesh({ events, onEventClick }: UpcomingSeshProps) {
+    const filteredEvents = events.filter(
+        evento => evento.status?.toLowerCase() === 'upcoming'
+    );
+
     return (
         <section>
             <h2 className="text-3xl font-extrabold uppercase mb-6 border-b-2 border-white pb-2">Upcoming Sesh</h2>
-            {events.length === 0 ? (
-                <div className="text-4xl font-bold animate-pulse uppercase">Carregando...</div>
+            {filteredEvents.length === 0 ? (
+                <div className="text-4xl font-bold animate-pulse uppercase">Nenhum evento próximo...</div>
             ) : (
                 <div className="flex flex-col">
                     <ul className="flex flex-col">
-                        {events.map((evento, index) => (
+                        {filteredEvents.map((evento, index) => (
                             <li 
-                                key={index}
-                                onClick={() => {
-                                    if (evento.status !== 'past') {
-                                        onEventClick(evento);
-                                    }
-                                }}
-                                className={`flex justify-between items-center py-6 border-b border-white/30 transition-colors px-4 group ${
-                                    evento.status === 'past' 
-                                        ? 'line-through text-zinc-600 cursor-not-allowed'
-                                        : 'hover:bg-white hover:text-black cursor-pointer'
-                                }`} 
+                                key={evento.id || index}
+                                onClick={() => onEventClick(evento)}
+                                className="flex justify-between items-center py-6 border-b border-white/30 transition-colors px-4 group hover:bg-white hover:text-black" 
                             >   
                                 <div className="flex items-center gap-8 w-full">
-                                    <span className="text-2xl font-bold w-20">{evento.date}</span>
-                                    <span className="text-xl font-black tracking-widest flex-grow">{evento.name}</span>
-                                    <span className="text-lg font-medium hidden md:block">{evento.location}</span>
+                                    <span className="text-2xl font-bold w-20">
+                                        {evento.date ? evento.date.split('-').slice(1, 3).reverse().join('/') : ''}
+                                    </span>
+                                    <span className="text-xl font-black tracking-widest flex-grow">{evento.name.toUpperCase()}</span>
+                                    <span className="text-lg font-medium hidden md:block">{evento.location.toUpperCase()}</span>
                                 </div>
-                                
-                                {evento.status !== 'past' && (
-                                    <ArrowRight size={28} strokeWidth={3} className="opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-2" />
-                                )}
                             </li>
                         ))}
                     </ul>

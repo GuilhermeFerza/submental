@@ -55,6 +55,7 @@ func main() {
 		admin.POST("/releases", handlers.PostReleases)
 		admin.PUT("/releases/:id", handlers.PutReleases)
 		admin.DELETE("/releases/:id", handlers.DeleteReleases)
+		admin.GET("/releases/soundcloud-meta", handlers.GetSoundCloudMeta)
 		admin.GET("/stats", handlers.GetDashboardStats)
 	}
 	port := os.Getenv("PORT")

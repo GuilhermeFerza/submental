@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"submental-api/database"
@@ -13,9 +15,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type SoundCloundOEmbed struct {
+	Title        string `json:"title"`
+	AuthorName   string `json:"author_name"`
+	ThumbnailURL string `json:"thumbnail_url"`
+}
+
 func GetReleases(c *gin.Context) {
 	rows, err := database.Pool.Query(context.Background(), `
-		SELECT id, artist, title, cover_url, release_year
+		SELECT id, artist, title, cover_url, release_year, soundcloud_url, preview_url
 		FROM releases
 		ORDER BY created_at DESC;
 	`)
@@ -30,11 +38,18 @@ func GetReleases(c *gin.Context) {
 
 	for rows.Next() {
 		var r models.Release
+		var scURL, prevURL *string
 
-		err := rows.Scan(&r.ID, &r.Artist, &r.Title, &r.CoverURL, &r.ReleaseYear)
+		err := rows.Scan(&r.ID, &r.Artist, &r.Title, &r.CoverURL, &r.ReleaseYear, &scURL, &prevURL)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"erro": "Erro ao ler dados"})
 			return
+		}
+		if scURL != nil {
+			r.SoundCloudURL = *scURL
+		}
+		if prevURL != nil {
+			r.PreviewURL = *prevURL
 		}
 		releases = append(releases, r)
 	}
@@ -45,49 +60,112 @@ func GetReleases(c *gin.Context) {
 	c.JSON(http.StatusOK, releases)
 }
 
+func GetSoundCloudMeta(c *gin.Context) {
+	targetURL := c.Query("url")
+	if targetURL == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "URL obrigatória"})
+		return
+	}
+
+	oEmbedAPI := "https://soundcloud.com/oembed?format=json&url=" + url.QueryEscape(targetURL)
+	resp, err := http.Get(oEmbedAPI)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Não foi possível obter dados do SoundCloud"})
+		return
+	}
+	defer resp.Body.Close()
+
+	var data SoundCloundOEmbed
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao decodificar dados"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"title":     data.Title,
+		"artist":    data.AuthorName,
+		"cover_url": data.ThumbnailURL,
+	})
+}
+
 func PostReleases(c *gin.Context) {
 	title := c.PostForm("title")
 	artist := c.PostForm("artist")
 	yearStr := c.PostForm("year")
 	year, _ := strconv.Atoi(yearStr)
+	soundCloudURL := c.PostForm("soundcloud_url")
 
-	file, err := c.FormFile("cover_image")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "A imagem da capa é obrigatória."})
-		return
+	var coverURL string
+
+	if soundCloudURL != "" {
+		oEmbedAPI := "https://soundcloud.com/oembed?format=json&url=" + url.QueryEscape(soundCloudURL)
+		if resp, err := http.Get(oEmbedAPI); err == nil && resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+			var data SoundCloundOEmbed
+			if json.NewDecoder(resp.Body).Decode(&data) == nil && data.ThumbnailURL != "" {
+				coverURL = data.ThumbnailURL
+			}
+		}
 	}
 
-	srcFile, err := file.Open()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao processar o arquivo."})
-		return
-	}
-	defer srcFile.Close()
-	cld, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao conectar com o serviço de imagens."})
-		return
+	if coverURL == "" {
+		file, err := c.FormFile("cover_image")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "A imagem da capa é obrigatória ou informe um link válido do SoundCloud."})
+			return
+		}
+
+		srcFile, err := file.Open()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao processar o arquivo de capa."})
+			return
+		}
+		defer srcFile.Close()
+
+		cld, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao conectar com o serviço de nuvem."})
+			return
+		}
+
+		ctx := context.Background()
+		uploadResult, err := cld.Upload.Upload(ctx, srcFile, uploader.UploadParams{Folder: "submental/releases"})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao enviar imagem para a nuvem."})
+			return
+		}
+		coverURL = uploadResult.SecureURL
 	}
 
-	ctx := context.Background()
-	uploadResult, err := cld.Upload.Upload(ctx, srcFile, uploader.UploadParams{
-		Folder: "submental/releases",
-	})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao enviar imagem para a nuvem."})
-		return
+	var previewURL string
+	audioFile, err := c.FormFile("audio_clip")
+	if err == nil && audioFile != nil {
+		srcAudio, err := audioFile.Open()
+		if err == nil {
+			defer srcAudio.Close()
+			cld, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
+			if err == nil {
+				ctx := context.Background()
+				resAudio, err := cld.Upload.Upload(ctx, srcAudio, uploader.UploadParams{
+					Folder:       "submental/previews",
+					ResourceType: "auto",
+				})
+				if err == nil {
+					previewURL = resAudio.SecureURL
+				}
+			}
+		}
 	}
-
-	coverURL := uploadResult.SecureURL
 
 	query := `
-		INSERT INTO releases (artist, title, cover_url, release_year)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO releases (artist, title, cover_url, release_year, soundcloud_url, preview_url)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id
 	`
 
 	var newID string
-	err = database.Pool.QueryRow(ctx, query, artist, title, coverURL, year).Scan(&newID)
+	ctx := context.Background()
+	err = database.Pool.QueryRow(ctx, query, artist, title, coverURL, year, soundCloudURL, previewURL).Scan(&newID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao salvar no banco de dados."})
 		return
@@ -103,56 +181,18 @@ func PutReleases(c *gin.Context) {
 	artist := c.PostForm("artist")
 	yearStr := c.PostForm("year")
 	year, _ := strconv.Atoi(yearStr)
+	soundCloudURL := c.PostForm("soundcloud_url")
 
-	file, err := c.FormFile("cover_image")
-
-	if err == nil {
-		srcFile, err := file.Open()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao processar o arquivo."})
-			return
-		}
-		defer srcFile.Close()
-
-		cld, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao conectar com o serviço de imagens."})
-			return
-		}
-
-		ctx := context.Background()
-		uploadResult, err := cld.Upload.Upload(ctx, srcFile, uploader.UploadParams{
-			Folder: "submental/releases",
-		})
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao enviar nova imagem para a nuvem."})
-			return
-		}
-
-		coverURL := uploadResult.SecureURL
-
-		query := `
-			UPDATE releases
-			SET artist = $1, title = $2, cover_url = $3, release_year = $4
-			WHERE id = $5
-		`
-		commandTag, err := database.Pool.Exec(ctx, query, artist, title, coverURL, year, id)
-		if err != nil || commandTag.RowsAffected() == 0 {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar com imagem."})
-			return
-		}
-
-	} else {
-		query := `
-			UPDATE releases
-			SET artist = $1, title = $2, release_year = $3
-			WHERE id = $4
-		`
-		commandTag, err := database.Pool.Exec(context.Background(), query, artist, title, year, id)
-		if err != nil || commandTag.RowsAffected() == 0 {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar textos."})
-			return
-		}
+	ctx := context.Background()
+	query := `
+		UPDATE releases
+		SET artist = $1, title = $2, release_year = $3, soundcloud_url = $4
+		WHERE id = $5
+	`
+	_, err := database.Pool.Exec(ctx, query, artist, title, year, soundCloudURL, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar lançamento."})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Lançamento atualizado com sucesso!"})
