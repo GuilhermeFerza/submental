@@ -243,7 +243,9 @@
                     <div>
                         <h3 className="font-bold uppercase text-lg">{evento.name}</h3>
                         <div className="flex items-center gap-2 text-sm font-mono mt-1">
-                        <span className="opacity-70">{evento.date}</span>
+                        <span className="opacity-70">
+                            {evento.date ? evento.date.split('-').slice(1, 3).reverse().join('/') : ''}
+                        </span>
                         <span className="opacity-30">|</span>
                         <span className="opacity-70 truncate uppercase">{evento.location}</span>
                         </div>
