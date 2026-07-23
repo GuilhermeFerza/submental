@@ -3,30 +3,34 @@ import { Header } from "../components/layout/Header";
 import { Footer } from "../components/layout/Footer";
 import { Disc3 } from 'lucide-react';
 
-interface Release {
+interface Release{
     id: string;
     artist: string;
     title: string;
     coverPlaceholder: string;
-    year: string;
+    year: number;
 }
 
 export function Releases() {
     const [releases, setReleases] = useState<Release[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchAllReleases = async () => {
-            setReleases([
-                { id: "1", artist: "FUTSU", title: "RIDDIM VIP", coverPlaceholder: "COVER 1", year: "2026" },
-                { id: "2", artist: "KAITO", title: "DEEP DIVE", coverPlaceholder: "COVER 2", year: "2026" },
-                { id: "3", artist: "SUBMENTAL", title: "COMPILATION V1", coverPlaceholder: "COVER 3", year: "2025" },
-                { id: "4", artist: "ZETTA", title: "HEAVY BASS", coverPlaceholder: "COVER 4", year: "2025" },
-                { id: "5", artist: "DJOTA", title: "UNDERGROUND", coverPlaceholder: "COVER 5", year: "2025" },
-                { id: "6", artist: "FUTSU", title: "BASSLINES", coverPlaceholder: "COVER 6", year: "2024" },
-            ]);
-        };
-        fetchAllReleases();
-    }, []);
+    const API_URL = import.meta.env.VITE_API_URL
+
+    useEffect(()=>{
+        fetch(`${API_URL}/api/releases`)
+            .then((response)=> response.json())
+            .then((data)=>{
+                setReleases(data);
+                setLoading(false);
+            })
+            .catch((error)=>{
+                console.error("Erro ao buscar releases", error);
+                setLoading(false)
+            });
+    },[])
+
+    if (loading) return <p>Loading...</p>;
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -66,6 +70,7 @@ export function Releases() {
                     ))}
                 </section>
             </main>
+
 
             <Footer />
         </div>

@@ -6,25 +6,39 @@ import { UpcomingSesh } from "../components/sections/UpcomingSesh";
 import { LatestDrops } from "../components/sections/LatestDrops";
 import { VenenoSets } from "../components/sections/VenenoSets";
 
+interface Event {
+    id: string;
+    name: string;
+    date: string;
+    location: string;
+    status: string;
+    headliners: string[];
+    guests: string[];
+}
+
 export function Home() {
-    const [heroData, setHeroData] = useState<any | null>(null);
-    const [upComing, setUpComing] = useState<any[]>([]);
+    const [heroData, setHeroData] = useState<Event | null>(null);
+    const [upComing, setUpComing] = useState<Event[]>([]);
+
     const [releases, setReleases] = useState<any[]>([]);
     const [mixtapes, setMixtapes] = useState<any[]>([]);
 
-    useEffect(() => {
-        setHeroData({
-            headliners: ["FUTSU", "KAITO."],
-            guests: ["DJOTA", "ZETTA"],
-            date: "18 de ABRIL",
-            location: "AO VIVO NA VENENO.LIVE"
-        });
-        
-        setUpComing([
-            { name: "BASS SESH V3", date: "18/04", location: "VENENO.LIVE" },
-            { name: "TESTE DA SILVA", date: "24/07", location: "SALVADOR/BA" },
-        ]);
-        
+    const API_URL = import.meta.env.VITE_API_URL
+
+    useEffect(()=>{
+        fetch(`${API_URL}/api/events`)
+            .then((response)=>response.json())
+            .then((data: Event[]) => {
+                if(data && data.length > 0){
+                    const nextUpcomingEvent = data.find(event => event.status === 'upcoming')
+                    setHeroData(nextUpcomingEvent || data[0]);
+                    setUpComing(data)
+                }
+            })
+    },[])
+
+
+    useEffect(() => {        
         setReleases([
             { id: "1", artist: "FUTSU", title: "RIDDIM VIP", coverPlaceholder: "COVER 1" },
             { id: "2", artist: "KAITO", title: "DEEP DIVE", coverPlaceholder: "COVER 2" },

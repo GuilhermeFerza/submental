@@ -9,23 +9,30 @@ interface EventData {
     date: string;
     location: string;
     status: 'upcoming' | 'past';
+    headliners: string[];
+    guests: string[]
 }
 
 export function Events() {
     const [events, setEvents] = useState<EventData[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchAllEvents = async () => {
-            setEvents([
-                { id: "1", name: "BASS SESH V3", date: "18/04", location: "VENENO.LIVE", status: "upcoming" },
-                { id: "2", name: "DUBSTEP INVASION", date: "12/05", location: "SÃO PAULO/SP", status: "upcoming" },
-                { id: "3", name: "TESTE DA SILVA", date: "24/07", location: "SALVADOR/BA", status: "past" },
-                { id: "4", name: "BASS SESH V2", date: "10/01", location: "VENENO.LIVE", status: "past" },
-            ]);
-        };
-        fetchAllEvents();
-    }, []);
+    const API_URL = import.meta.env.VITE_API_URL
 
+    useEffect(()=>{
+        fetch(`${API_URL}/api/events`)
+            .then((response)=>response.json())
+            .then((data)=>{
+                setEvents(data)
+                setLoading(false)
+            })
+            .catch((error)=>{
+                console.error("Erro ao buscar releases", error);
+                setLoading(false)
+            });
+    })
+
+    if (loading) return <p>Loading...</p>;
     const upcomingEvents = events.filter(e => e.status === 'upcoming');
     const pastEvents = events.filter(e => e.status === 'past');
 

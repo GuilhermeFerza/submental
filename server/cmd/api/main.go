@@ -5,7 +5,9 @@ import (
 	"os"
 
 	"submental-api/database"
+	"submental-api/handlers"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,6 +19,12 @@ func main() {
 
 	r := gin.Default()
 
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
+	r.Use(cors.New(config))
+
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
@@ -24,9 +32,16 @@ func main() {
 		})
 	})
 
+	api := r.Group("/api")
+	{
+		api.GET("/releases", handlers.GetReleases)
+		api.GET("/events", handlers.GetEvents)
+		api.GET("/mixtapes", handlers.GetMixtapes)
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "8081"
 	}
 
 	fmt.Printf("Servidor rodando na porta %s...\n", port)
