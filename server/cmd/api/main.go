@@ -6,6 +6,7 @@ import (
 
 	"submental-api/database"
 	"submental-api/handlers"
+	"submental-api/middlewares"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -37,8 +38,14 @@ func main() {
 		api.GET("/releases", handlers.GetReleases)
 		api.GET("/events", handlers.GetEvents)
 		api.GET("/mixtapes", handlers.GetMixtapes)
+		api.POST("/login", handlers.Login)
 	}
 
+	admin := r.Group("/api")
+	admin.Use(middlewares.RequireAuth())
+	{
+
+	}
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8081"
