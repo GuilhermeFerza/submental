@@ -13,7 +13,7 @@ func GetEvents(c *gin.Context) {
 	query := `
 		SELECT id, name, TO_CHAR(event_date, 'YYYY-MM-DD') as date, location, status, headliners, guests
 		FROM events
-		ORDER BY event_date ASC
+		ORDER BY event_date DESC
 	`
 	rows, err := database.Pool.Query(context.Background(), query)
 	if err != nil {
