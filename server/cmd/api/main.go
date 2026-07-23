@@ -46,6 +46,7 @@ func main() {
 	{
 		admin.GET("/eventos", handlers.GetEvents)
 		admin.POST("/eventos", handlers.PostEvents)
+		admin.DELETE("/eventos/:id", handlers.DeleteEvent)
 	}
 	port := os.Getenv("PORT")
 	if port == "" {

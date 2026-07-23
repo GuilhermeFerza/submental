@@ -93,3 +93,21 @@ func PostEvents(c *gin.Context) {
 	c.JSON(http.StatusCreated, novoEvento)
 
 }
+
+func DeleteEvent(c *gin.Context) {
+	id := c.Param("id")
+
+	query := `DELETE FROM events WHERE id = $1`
+
+	commandTag, err := database.Pool.Exec(context.Background(), query, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro interno no banco de dados"})
+		return
+	}
+
+	if commandTag.RowsAffected() == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Evento nao encontrado"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Evento excluido com sucesso"})
+}
