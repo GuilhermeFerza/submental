@@ -2,15 +2,14 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"submental-api/database"
 	"submental-api/models"
-	"time"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
 )
 
@@ -50,7 +49,6 @@ func PostReleases(c *gin.Context) {
 	title := c.PostForm("title")
 	artist := c.PostForm("artist")
 	yearStr := c.PostForm("year")
-
 	year, _ := strconv.Atoi(yearStr)
 
 	file, err := c.FormFile("cover_image")
@@ -59,19 +57,28 @@ func PostReleases(c *gin.Context) {
 		return
 	}
 
-	if _, err := os.Stat("uploads"); os.IsNotExist(err) {
-		os.Mkdir("uploads", os.ModePerm)
+	srcFile, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao processar o arquivo."})
+		return
 	}
-
-	filename := fmt.Sprintf("%d%s", time.Now().Unix(), filepath.Ext(file.Filename))
-	savePath := filepath.Join("uploads", filename)
-
-	if err := c.SaveUploadedFile(file, savePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao salvar a imagem."})
+	defer srcFile.Close()
+	cld, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao conectar com o serviço de imagens."})
 		return
 	}
 
-	coverURL := "/" + filepath.ToSlash(savePath)
+	ctx := context.Background()
+	uploadResult, err := cld.Upload.Upload(ctx, srcFile, uploader.UploadParams{
+		Folder: "submental/releases",
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao enviar imagem para a nuvem."})
+		return
+	}
+
+	coverURL := uploadResult.SecureURL
 
 	query := `
 		INSERT INTO releases (artist, title, cover_url, release_year)
@@ -80,7 +87,7 @@ func PostReleases(c *gin.Context) {
 	`
 
 	var newID string
-	err = database.Pool.QueryRow(context.Background(), query, artist, title, coverURL, year).Scan(&newID)
+	err = database.Pool.QueryRow(ctx, query, artist, title, coverURL, year).Scan(&newID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao salvar no banco de dados."})
 		return
@@ -100,25 +107,36 @@ func PutReleases(c *gin.Context) {
 	file, err := c.FormFile("cover_image")
 
 	if err == nil {
-		if _, err := os.Stat("uploads"); os.IsNotExist(err) {
-			os.Mkdir("uploads", os.ModePerm)
+		srcFile, err := file.Open()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao processar o arquivo."})
+			return
 		}
-		filename := fmt.Sprintf("%d%s", time.Now().Unix(), filepath.Ext(file.Filename))
-		savePath := filepath.Join("uploads", filename)
+		defer srcFile.Close()
 
-		if err := c.SaveUploadedFile(file, savePath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao salvar a nova imagem."})
+		cld, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao conectar com o serviço de imagens."})
 			return
 		}
 
-		coverURL := "/" + filepath.ToSlash(savePath)
+		ctx := context.Background()
+		uploadResult, err := cld.Upload.Upload(ctx, srcFile, uploader.UploadParams{
+			Folder: "submental/releases",
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao enviar nova imagem para a nuvem."})
+			return
+		}
+
+		coverURL := uploadResult.SecureURL
 
 		query := `
 			UPDATE releases
 			SET artist = $1, title = $2, cover_url = $3, release_year = $4
 			WHERE id = $5
 		`
-		commandTag, err := database.Pool.Exec(context.Background(), query, artist, title, coverURL, year, id)
+		commandTag, err := database.Pool.Exec(ctx, query, artist, title, coverURL, year, id)
 		if err != nil || commandTag.RowsAffected() == 0 {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar com imagem."})
 			return

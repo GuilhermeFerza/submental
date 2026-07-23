@@ -205,7 +205,7 @@ export function AdminReleases() {
                             <div className="aspect-square bg-black border border-zinc-800 mb-4 flex items-center justify-center relative overflow-hidden">
                                 {rel.coverUrl ? (
                                     <img 
-                                        src={`${API_URL}${rel.coverUrl}`}
+                                        src={rel.coverUrl}
                                         alt={`Capa de ${rel.title}`} 
                                         className="w-full h-full object-cover group-hover:opacity-40 transition-opacity duration-300"
                                     />

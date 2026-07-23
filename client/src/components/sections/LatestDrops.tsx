@@ -23,7 +23,7 @@ export function LatestDrops({ releases }: LatestDropsProps) {
                         <div className="aspect-square bg-zinc-900 border border-zinc-700 group-hover:border-white transition-colors relative overflow-hidden">
                             {release.coverUrl ? (
                                 <img 
-                                    src={`${API_URL}${release.coverUrl}`} 
+                                    src={release.coverUrl} 
                                     alt={`${release.artist} - ${release.title}`} 
                                     className="w-full h-full object-cover group-hover:opacity-40 transition-opacity duration-300"
                                 />
