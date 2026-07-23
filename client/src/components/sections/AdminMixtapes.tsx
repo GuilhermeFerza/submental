@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, X } from "lucide-react";
 
 interface Mixtape {
@@ -39,7 +39,7 @@ export function AdminMixtapes() {
         return (match && match[2].length === 11) ? match[2] : url;
     };
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
         const finalYoutubeId = extractYouTubeId(youtubeInput);
@@ -112,7 +112,7 @@ export function AdminMixtapes() {
     return (
         <div className="p-8 text-white min-h-screen">
             <div className="flex justify-between items-center mb-10 border-b-2 border-white pb-4">
-                <h1 className="text-4xl font-extrabold uppercase tracking-tight">Gestão de Mixtapes</h1>
+                <h1 className="text-4xl font-extrabold uppercase tracking-tight">Gestão de Sets</h1>
                 {!isFormOpen && (
                     <button 
                         onClick={() => setIsFormOpen(true)}

@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Eventos from '../components/sections/Eventos';
 import { AdminMixtapes } from '../components/sections/AdminMixtapes';
+import { AdminReleases } from '../components/sections/AdminReleases';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   
-  const [activeTab, setActiveTab] = useState<'visao_geral' | 'eventos' | 'mixtapes'>('visao_geral');
+  const [activeTab, setActiveTab] = useState<'visao_geral' | 'releases' |'eventos' | 'set'>('visao_geral');
   // useEffect(() => {
   //   const token = localStorage.getItem('token');
   //   if (!token) {
@@ -23,8 +24,10 @@ export default function Dashboard() {
     switch (activeTab) {
       case 'eventos':
         return <Eventos />;
-      case 'mixtapes':
+      case 'set':
         return <AdminMixtapes />
+      case 'releases':
+        return <AdminReleases />
       case 'visao_geral':
       default:
         return (
@@ -86,6 +89,16 @@ export default function Dashboard() {
             >
               Visão Geral
             </button>
+            <button
+              onClick={() => setActiveTab('releases')}
+              className={`text-left uppercase font-bold p-3 border-2 transition-colors ${
+                activeTab === 'releases' 
+                  ? 'bg-white text-black border-white' 
+                  : 'bg-transparent text-white border-transparent hover:border-white'
+              }`}
+            >
+              Lançamentos
+            </button>
             <button 
               onClick={() => setActiveTab('eventos')}
               className={`text-left uppercase font-bold p-3 border-2 transition-colors ${
@@ -97,14 +110,14 @@ export default function Dashboard() {
               Eventos
             </button>
             <button 
-              onClick={() => setActiveTab('mixtapes')}
+              onClick={() => setActiveTab('set')}
               className={`text-left uppercase font-bold p-3 border-2 transition-colors ${
-                activeTab === 'mixtapes' 
+                activeTab === 'set' 
                   ? 'bg-white text-black border-white' 
                   : 'bg-transparent text-white border-transparent hover:border-white'
               }`}
             >
-              Mixtapes
+              SET
             </button>
           </nav>
         </div>

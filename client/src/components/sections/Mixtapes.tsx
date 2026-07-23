@@ -17,7 +17,7 @@ export function Mixtapes({ mixtapes }: VenenoSetsProps) {
 
     return (
         <section>
-            <h2 className="text-3xl font-extrabold uppercase mb-6 border-b-2 border-white pb-2">Veneno Sets</h2>
+            <h2 className="text-3xl font-extrabold uppercase mb-6 border-b-2 border-white pb-2">Past Sets</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {mixtapes.map((mix) => (
                     <div key={mix.id} className="flex flex-col gap-3 group">

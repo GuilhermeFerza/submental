@@ -19,6 +19,7 @@ func main() {
 	defer database.Pool.Close()
 
 	r := gin.Default()
+	r.Static("/uploads", "./uploads")
 
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
@@ -51,6 +52,9 @@ func main() {
 		admin.POST("/mixtapes", handlers.PostMixtapes)
 		admin.PUT("/mixtapes/:id", handlers.PutMixtapes)
 		admin.DELETE("/mixtapes/:id", handlers.DeleteMixtapes)
+		admin.POST("/releases", handlers.PostReleases)
+		admin.PUT("/releases/:id", handlers.PutReleases)
+		admin.DELETE("/releases/:id", handlers.DeleteReleases)
 	}
 	port := os.Getenv("PORT")
 	if port == "" {
