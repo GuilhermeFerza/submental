@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Eventos from '../components/sections/Eventos';
+import { AdminMixtapes } from '../components/sections/AdminMixtapes';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -23,12 +24,7 @@ export default function Dashboard() {
       case 'eventos':
         return <Eventos />;
       case 'mixtapes':
-        return (
-          <div className="border-4 border-white p-8">
-            <h2 className="text-2xl font-black uppercase tracking-widest mb-4">Gestão de Mixtapes</h2>
-            <p className="opacity-70 uppercase font-bold animate-pulse">Módulo em construção...</p>
-          </div>
-        );
+        return <AdminMixtapes />
       case 'visao_geral':
       default:
         return (

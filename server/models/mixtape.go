@@ -1,7 +1,8 @@
 package models
 
 type Mixtape struct {
-	ID       string `json:"id"`
-	Title    string `json:"title"`
-	Duration string `json:"duration"`
+	ID        string `json:"id"`
+	Title     string `json:"title"`
+	Duration  string `json:"duration"`
+	YoutubeID string `json:"youtubeId"`
 }

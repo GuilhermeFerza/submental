@@ -4,7 +4,7 @@ import { Footer } from "../components/layout/Footer";
 import { HeroSection } from "../components/sections/HeroSection";
 import { UpcomingSesh } from "../components/sections/UpcomingSesh";
 import { LatestDrops } from "../components/sections/LatestDrops";
-import { VenenoSets } from "../components/sections/VenenoSets";
+import { Mixtapes} from "../components/sections/Mixtapes";
 
 interface Event {
     id: string;
@@ -14,6 +14,13 @@ interface Event {
     status: string;
     headliners: string[];
     guests: string[];
+}
+
+interface Mixtape {
+    id: string;
+    title: string;
+    duration: string;
+    youtubeId: string;
 }
 
 export function Home() {
@@ -46,12 +53,14 @@ export function Home() {
     },[])
 
 
-    useEffect(() => {        
-        setMixtapes([
-            { id: "1", title: "VENENO.LIVE 001 - KAITO", duration: "54:20" },
-            { id: "2", title: "POPIH WATCH: BASS SESH", duration: "1:12:05" },
-        ]);
-    }, []);
+    useEffect(()=>{
+        fetch(`${API_URL}/api/mixtapes`)
+            .then((response)=> response.json())
+            .then((data: Mixtape[])=>{
+                setMixtapes(data || [])
+            })
+            .catch((error)=>console.error("Erro ao carregar mixtapes", error))
+    }, [API_URL])
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -61,7 +70,7 @@ export function Home() {
                 <HeroSection data={heroData} />
                 <UpcomingSesh events={upComing} />
                 <LatestDrops releases={releases} />
-                <VenenoSets mixtapes={mixtapes} />
+                <Mixtapes mixtapes={mixtapes} />
             </main>
 
             <Footer />

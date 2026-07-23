@@ -48,6 +48,9 @@ func main() {
 		admin.POST("/eventos", handlers.PostEvents)
 		admin.DELETE("/eventos/:id", handlers.DeleteEvent)
 		admin.PUT("/eventos/:id", handlers.UpdateEvent)
+		admin.POST("/mixtapes", handlers.PostMixtapes)
+		admin.PUT("/mixtapes/:id", handlers.PutMixtapes)
+		admin.DELETE("/mixtapes/:id", handlers.DeleteMixtapes)
 	}
 	port := os.Getenv("PORT")
 	if port == "" {
