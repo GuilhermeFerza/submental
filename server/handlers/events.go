@@ -111,3 +111,46 @@ func DeleteEvent(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Evento excluido com sucesso"})
 }
+
+func UpdateEvent(c *gin.Context) {
+	id := c.Param("id")
+	var eventoAtualizado models.Event
+
+	if err := c.ShouldBindJSON(&eventoAtualizado); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Dados invalidos"})
+		return
+	}
+
+	if eventoAtualizado.Name == "" || eventoAtualizado.Date == "" || eventoAtualizado.Location == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nome, Data e Local são obrigatórios."})
+		return
+	}
+	if eventoAtualizado.Status == "" {
+		eventoAtualizado.Status = "upcoming"
+	}
+
+	query := `
+		UPDATE events
+		SET name = $1, event_date = $2, location = $3, status = $4, headliners = $5, guests = $6
+		WHERE id = $7
+	`
+
+	commandTag, err := database.Pool.Exec(context.Background(), query,
+		eventoAtualizado.Name,
+		eventoAtualizado.Date,
+		eventoAtualizado.Location,
+		eventoAtualizado.Status,
+		eventoAtualizado.Headliners,
+		eventoAtualizado.Guests,
+		id,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro interno ao atualizar evento."})
+		return
+	}
+	if commandTag.RowsAffected() == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Evento não encontrado."})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Evento atualizado com sucesso."})
+}
