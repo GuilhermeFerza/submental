@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* O @apply agora funciona perfeitamente aqui */
+@layer base {
+  body {
+    @apply bg-black text-white antialiased;
+  }
+}

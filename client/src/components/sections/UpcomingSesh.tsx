@@ -1,0 +1,37 @@
+import { ArrowRight } from 'lucide-react';
+
+interface UpComing {
+    name: string;
+    date: string;
+    location: string;
+}
+
+interface UpcomingSeshProps {
+    events: UpComing[];
+}
+
+export function UpcomingSesh({ events }: UpcomingSeshProps) {
+    return (
+        <section>
+            <h2 className="text-3xl font-extrabold uppercase mb-6 border-b-2 border-white pb-2">Upcoming Sesh</h2>
+            {events.length === 0 ? (
+                <div className="text-4xl font-bold animate-pulse uppercase">Carregando...</div>
+            ) : (
+                <div className="flex flex-col">
+                    <ul className="flex flex-col">
+                        {events.map((evento, index) => (
+                            <li className="flex justify-between items-center py-6 border-b border-white/30 hover:bg-white hover:text-black transition-colors cursor-pointer px-4 group" key={index}>   
+                                <div className="flex items-center gap-8 w-full">
+                                    <span className="text-2xl font-bold w-20">{evento.date}</span>
+                                    <span className="text-xl font-black tracking-widest flex-grow">{evento.name}</span>
+                                    <span className="text-lg font-medium hidden md:block">{evento.location}</span>
+                                </div>
+                                <ArrowRight size={28} strokeWidth={3} className="opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-2" />
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+        </section>
+    );
+}
