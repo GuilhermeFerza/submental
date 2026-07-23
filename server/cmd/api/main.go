@@ -41,10 +41,11 @@ func main() {
 		api.POST("/login", handlers.Login)
 	}
 
-	admin := r.Group("/api")
+	admin := r.Group("/api/admin")
 	admin.Use(middlewares.RequireAuth())
 	{
-
+		admin.GET("/eventos", handlers.GetEvents)
+		admin.POST("/eventos", handlers.PostEvents)
 	}
 	port := os.Getenv("PORT")
 	if port == "" {

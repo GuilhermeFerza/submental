@@ -5,7 +5,7 @@ import { Events } from './pages/Events';
 import Login from './pages/Login';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Admin } from './pages/Admin';
+import Dashboard from './pages/Dashboard';
 
 
 export default function App() {
@@ -18,7 +18,7 @@ export default function App() {
                     <Route path="/releases" element={<Releases />} />
                     <Route path="/events" element={<Events />} />
                     <Route path="/admin" element={<Login />}/>
-                    <Route path="/admin/dashboard" element={<Admin />}/>
+                    <Route path="/admin/dashboard" element={<Dashboard />}/>
                 </Routes>
             </Router>
         </>
