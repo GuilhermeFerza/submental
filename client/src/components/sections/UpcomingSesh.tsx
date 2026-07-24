@@ -12,10 +12,9 @@ interface UpComing {
 
 interface UpcomingSeshProps {
     events: UpComing[];
-    onEventClick: (evento: UpComing) => void;
 }
 
-export function UpcomingSesh({ events, onEventClick }: UpcomingSeshProps) {
+export function UpcomingSesh({ events }: UpcomingSeshProps) {
     const filteredEvents = events.filter(
         evento => evento.status?.toLowerCase() === 'upcoming'
     );
@@ -31,7 +30,6 @@ export function UpcomingSesh({ events, onEventClick }: UpcomingSeshProps) {
                         {filteredEvents.map((evento, index) => (
                             <li 
                                 key={evento.id || index}
-                                onClick={() => onEventClick(evento)}
                                 className="flex justify-between items-center py-6 border-b border-white/30 transition-colors px-4 group hover:bg-white hover:text-black" 
                             >   
                                 <div className="flex items-center gap-8 w-full">
